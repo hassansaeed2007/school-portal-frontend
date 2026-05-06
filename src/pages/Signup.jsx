@@ -2,22 +2,20 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import PasswordInput from "../components/PasswordInput";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [role, setRole] = useState("Student");
+  const [role, setRole]     = useState("Student");
   const [loading, setLoading] = useState(false);
+  const [schoolName, setSchoolName] = useState("");
   const [form, setForm] = useState({
     name: "", email: "", password: "", confirmPassword: "", phone: "",
-    qualification: "", department: "",   // teacher
-    rollNumber: "", semester: "",        // student
-    schoolCode: "",                      // teacher & student
+    qualification: "", department: "", rollNumber: "", semester: "", schoolCode: "",
   });
-  const [schoolName, setSchoolName] = useState("");
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  // Verify school code live
   const handleSchoolCode = async (e) => {
     const code = e.target.value;
     setForm({ ...form, schoolCode: code });
@@ -25,63 +23,60 @@ export default function Signup() {
       try {
         const { data } = await api.get(`/auth/school/${code}`);
         setSchoolName(data.name);
-      } catch {
-        setSchoolName("Invalid school code");
-      }
-    } else {
-      setSchoolName("");
-    }
+      } catch { setSchoolName("Invalid school code"); }
+    } else { setSchoolName(""); }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password !== form.confirmPassword) {
-      toast.error("Passwords do not match.");
-      return;
-    }
+    if (form.password !== form.confirmPassword) { toast.error("Passwords do not match."); return; }
     setLoading(true);
     try {
       const { data } = await api.post("/auth/signup", { ...form, role });
       toast.success(data.message);
-      // Redirect to OTP verification page
       navigate("/verify-otp", { state: { email: form.email } });
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  const roleColor = { Admin: "#1e50a0", Teacher: "#1a7a4a", Student: "#7a3a1a" };
-  const color = roleColor[role];
+  const roleConfig = {
+    Admin:   { color: "#1e50a0", gradient: "linear-gradient(135deg, #1a1a2e, #1e50a0)", icon: "👑" },
+    Teacher: { color: "#1a7a4a", gradient: "linear-gradient(135deg, #0d3320, #1a7a4a)", icon: "👨‍🏫" },
+    Student: { color: "#7a3a1a", gradient: "linear-gradient(135deg, #3a1a0d, #7a3a1a)", icon: "🎓" },
+  };
+  const rc = roleConfig[role];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f0f4ff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.1)", width: "100%", maxWidth: 520, overflow: "hidden" }}>
+    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Segoe UI', sans-serif" }}>
+      <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 10px 40px rgba(0,0,0,0.1)", width: "100%", maxWidth: 560, overflow: "hidden" }}>
 
         {/* Header */}
-        <div style={{ background: color, padding: "24px 0", textAlign: "center" }}>
-          <h2 style={{ color: "#fff", margin: 0, fontSize: 22 }}>Create Account</h2>
-          <p style={{ color: "rgba(255,255,255,0.8)", margin: "6px 0 0", fontSize: 13 }}>School Management Portal</p>
+        <div style={{ background: rc.gradient, padding: "28px 32px", display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ fontSize: 40 }}>{rc.icon}</div>
+          <div>
+            <h2 style={{ color: "#fff", margin: 0, fontSize: 22, fontWeight: 800 }}>Create Account</h2>
+            <p style={{ color: "rgba(255,255,255,0.8)", margin: "4px 0 0", fontSize: 13 }}>School Management Portal</p>
+          </div>
         </div>
 
-        {/* Role Selector */}
-        <div style={{ display: "flex", borderBottom: "2px solid #eee" }}>
+        {/* Role Tabs */}
+        <div style={{ display: "flex", background: "#f0f4ff" }}>
           {["Admin", "Teacher", "Student"].map((r) => (
             <button key={r} onClick={() => setRole(r)}
-              style={{ flex: 1, padding: "12px 0", border: "none", cursor: "pointer", fontWeight: role === r ? "bold" : "normal",
-                background: role === r ? color : "#fff", color: role === r ? "#fff" : "#555",
-                fontSize: 14, transition: "all 0.2s" }}>
-              {r}
+              style={{ flex: 1, padding: "13px 0", border: "none", cursor: "pointer", fontWeight: role === r ? 700 : 500,
+                background: role === r ? "#fff" : "transparent",
+                color: role === r ? roleConfig[r].color : "#888",
+                fontSize: 14, borderBottom: role === r ? `3px solid ${roleConfig[r].color}` : "3px solid transparent",
+                transition: "all 0.2s" }}>
+              {roleConfig[r].icon} {r}
             </button>
           ))}
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} style={{ padding: "24px 32px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
 
-            {/* Common fields */}
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={labelStyle}>{role === "Admin" ? "School Name *" : "Full Name *"}</label>
               <input style={inputStyle} name="name" value={form.name} onChange={handleChange} required
@@ -89,7 +84,7 @@ export default function Signup() {
             </div>
 
             <div>
-              <label style={labelStyle}>Email Address *</label>
+              <label style={labelStyle}>Email *</label>
               <input style={inputStyle} name="email" type="email" value={form.email} onChange={handleChange} required placeholder="Enter email" />
             </div>
 
@@ -100,84 +95,71 @@ export default function Signup() {
 
             <div>
               <label style={labelStyle}>Password *</label>
-              <input style={inputStyle} name="password" type="password" value={form.password} onChange={handleChange} required placeholder="Create password" />
+              <PasswordInput name="password" value={form.password} onChange={handleChange} placeholder="Create password" />
             </div>
 
             <div>
               <label style={labelStyle}>Confirm Password *</label>
-              <input style={inputStyle} name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} required placeholder="Repeat password" />
+              <PasswordInput name="confirmPassword" value={form.confirmPassword} onChange={handleChange} placeholder="Repeat password" />
             </div>
 
-            {/* Teacher-specific fields */}
-            {role === "Teacher" && (
-              <>
-                <div>
-                  <label style={labelStyle}>Qualification</label>
-                  <input style={inputStyle} name="qualification" value={form.qualification} onChange={handleChange} placeholder="e.g. PhD Computer Science" />
-                </div>
-                <div>
-                  <label style={labelStyle}>Department</label>
-                  <input style={inputStyle} name="department" value={form.department} onChange={handleChange} placeholder="e.g. CS Department" />
-                </div>
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={labelStyle}>School Code * <span style={{ fontWeight: "normal", color: "#888" }}>(get this from your Admin)</span></label>
-                  <input style={inputStyle} name="schoolCode" value={form.schoolCode} onChange={handleSchoolCode} required placeholder="Paste school code here" />
-                  {schoolName && <p style={{ marginTop: 5, fontSize: 12, color: schoolName === "Invalid school code" ? "#c0392b" : "#1a7a4a", fontWeight: "bold" }}>
-                    {schoolName === "Invalid school code" ? "❌ " : "✅ "}{schoolName}
-                  </p>}
-                </div>
-              </>
-            )}
+            {role === "Teacher" && (<>
+              <div>
+                <label style={labelStyle}>Qualification</label>
+                <input style={inputStyle} name="qualification" value={form.qualification} onChange={handleChange} placeholder="e.g. PhD CS" />
+              </div>
+              <div>
+                <label style={labelStyle}>Department</label>
+                <input style={inputStyle} name="department" value={form.department} onChange={handleChange} placeholder="e.g. CS Dept" />
+              </div>
+            </>)}
 
-            {/* Student-specific fields */}
-            {role === "Student" && (
-              <>
-                <div>
-                  <label style={labelStyle}>Roll Number *</label>
-                  <input style={inputStyle} name="rollNumber" value={form.rollNumber} onChange={handleChange} required placeholder="e.g. CS-2023-01" />
-                </div>
-                <div>
-                  <label style={labelStyle}>Semester</label>
-                  <input style={inputStyle} name="semester" value={form.semester} onChange={handleChange} placeholder="e.g. 2nd Semester" />
-                </div>
-                <div style={{ gridColumn: "1 / -1" }}>
-                  <label style={labelStyle}>School Code * <span style={{ fontWeight: "normal", color: "#888" }}>(get this from your Admin)</span></label>
-                  <input style={inputStyle} name="schoolCode" value={form.schoolCode} onChange={handleSchoolCode} required placeholder="Paste school code here" />
-                  {schoolName && <p style={{ marginTop: 5, fontSize: 12, color: schoolName === "Invalid school code" ? "#c0392b" : "#1a7a4a", fontWeight: "bold" }}>
-                    {schoolName === "Invalid school code" ? "❌ " : "✅ "}{schoolName}
-                  </p>}
-                </div>
-              </>
-            )}
+            {role === "Student" && (<>
+              <div>
+                <label style={labelStyle}>Roll Number *</label>
+                <input style={inputStyle} name="rollNumber" value={form.rollNumber} onChange={handleChange} required placeholder="e.g. CS-2023-01" />
+              </div>
+              <div>
+                <label style={labelStyle}>Semester</label>
+                <input style={inputStyle} name="semester" value={form.semester} onChange={handleChange} placeholder="e.g. 2nd Semester" />
+              </div>
+            </>)}
 
-            {/* Submit */}
-            <div style={{ gridColumn: "1 / -1", marginTop: 6 }}>
-              <button type="submit" disabled={loading}
-                style={{ width: "100%", padding: "12px", background: color, color: "#fff", border: "none",
-                  borderRadius: 6, fontSize: 15, fontWeight: "bold", cursor: "pointer" }}>
-                {loading ? "Creating Account..." : `Sign Up as ${role}`}
-              </button>
-            </div>
-
-            {/* Email notice for Teacher/Student */}
             {(role === "Teacher" || role === "Student") && (
-              <div style={{ gridColumn: "1 / -1", background: "#f0fff4", border: "1px solid #b2dfdb", borderRadius: 6, padding: "10px 14px", fontSize: 12, color: "#1a7a4a" }}>
-                ✉ A welcome email with your credentials will be sent to your email address.
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>School Code * <span style={{ fontWeight: 400, color: "#999" }}>(get from your Admin)</span></label>
+                <input style={inputStyle} name="schoolCode" value={form.schoolCode} onChange={handleSchoolCode} required placeholder="Paste school code here" />
+                {schoolName && (
+                  <p style={{ margin: "5px 0 0", fontSize: 12, fontWeight: 600, color: schoolName === "Invalid school code" ? "#e74c3c" : "#1a7a4a" }}>
+                    {schoolName === "Invalid school code" ? "❌ " : "✅ "}{schoolName}
+                  </p>
+                )}
               </div>
             )}
 
+            <div style={{ gridColumn: "1 / -1" }}>
+              <button type="submit" disabled={loading}
+                style={{ width: "100%", padding: "13px", background: rc.gradient, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+                {loading ? "Creating Account..." : `Sign Up as ${role} →`}
+              </button>
+            </div>
+
+            {(role === "Teacher" || role === "Student") && (
+              <div style={{ gridColumn: "1 / -1", background: "#f0fff4", border: "1px solid #b2dfdb", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#1a7a4a" }}>
+                ✉️ A verification code will be sent to your email address.
+              </div>
+            )}
           </div>
         </form>
 
-        {/* Footer */}
-        <div style={{ textAlign: "center", padding: "0 0 24px", fontSize: 13, color: "#666" }}>
+        <div style={{ textAlign: "center", padding: "0 0 24px", fontSize: 13, color: "#888" }}>
           Already have an account?{" "}
-          <Link to="/" style={{ color: color, fontWeight: "bold", textDecoration: "none" }}>Login here</Link>
+          <Link to="/" style={{ color: rc.color, fontWeight: 700, textDecoration: "none" }}>Sign In</Link>
         </div>
       </div>
     </div>
   );
 }
 
-const labelStyle = { display: "block", fontWeight: "600", marginBottom: 5, fontSize: 13, color: "#444" };
-const inputStyle = { width: "100%", padding: "9px 12px", border: "1px solid #ddd", borderRadius: 6, fontSize: 14, boxSizing: "border-box", outline: "none" };
+const labelStyle = { display: "block", fontWeight: 600, marginBottom: 5, fontSize: 13, color: "#444" };
+const inputStyle = { width: "100%", padding: "10px 12px", border: "1.5px solid #e8e8e8", borderRadius: 8, fontSize: 14, boxSizing: "border-box", outline: "none", background: "#fafafa" };
