@@ -1,32 +1,31 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
+import { TabBar } from "../../components/UI";
 import AddSubject from "./AddSubject";
 import MyStudents from "./MyStudents";
 import TakeAttendance from "./TakeAttendance";
 import TeacherProfile from "./TeacherProfile";
 import ManageTests from "./ManageTests";
 
-const tabs = ["My Subjects", "My Students", "Take Attendance", "Tests & Marks", "Profile"];
+const TABS = [
+  { key: "My Subjects",     label: "My Subjects" },
+  { key: "My Students",     label: "My Students" },
+  { key: "Take Attendance", label: "Attendance" },
+  { key: "Tests & Marks",   label: "Tests & Marks" },
+  { key: "Profile",         label: "Profile" },
+];
 
 export default function TeacherDashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
   const [active, setActive] = useState("My Subjects");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f0fff4" }}>
+    <div style={{ minHeight: "100vh", background: "#f5f7fa" }}>
       <Navbar user={user} />
-      <div style={{ background: "#fff", borderBottom: "2px solid #d0f0e0", display: "flex", padding: "0 24px" }}>
-        {tabs.map((tab) => (
-          <button key={tab} onClick={() => setActive(tab)}
-            style={{ padding: "14px 20px", border: "none", background: "none", cursor: "pointer",
-              fontWeight: active === tab ? "bold" : "normal",
-              color: active === tab ? "#1a7a4a" : "#555",
-              borderBottom: active === tab ? "3px solid #1a7a4a" : "3px solid transparent", fontSize: 14 }}>
-            {tab}
-          </button>
-        ))}
+      <div style={{ margin: "20px 28px 0" }}>
+        <TabBar tabs={TABS} active={active} onChange={setActive} color="#065f46" />
       </div>
-      <div style={{ padding: 28 }}>
+      <div style={{ padding: "20px 28px" }} className="fade-in">
         {active === "My Subjects"     && <AddSubject />}
         {active === "My Students"     && <MyStudents />}
         {active === "Take Attendance" && <TakeAttendance />}

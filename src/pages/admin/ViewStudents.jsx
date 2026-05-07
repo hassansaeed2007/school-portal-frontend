@@ -1,46 +1,33 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import { Card, PageTitle, StyledTable, Badge } from "../../components/UI";
 
 export default function ViewStudents() {
   const [students, setStudents] = useState([]);
+  const [search, setSearch]     = useState("");
 
-  useEffect(() => {
-    api.get("/admin/students").then((r) => setStudents(r.data));
-  }, []);
+  useEffect(() => { api.get("/admin/students").then((r) => setStudents(r.data)); }, []);
+
+  const filtered = students.filter((s) =>
+    s.name.toLowerCase().includes(search.toLowerCase()) ||
+    s.rollNumber?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div style={cardStyle}>
-      <h3 style={headingStyle}>All Students ({students.length})</h3>
-      <table style={tableStyle}>
-        <thead>
-          <tr style={{ background: "#1e50a0", color: "#fff" }}>
-            {["Name", "Email", "Roll Number", "Semester", "Department", "Subjects"].map((h) => (
-              <th key={h} style={thStyle}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {students.map((s, i) => (
-            <tr key={s._id} style={{ background: i % 2 === 0 ? "#f8faff" : "#fff" }}>
-              <td style={tdStyle}>{s.name}</td>
-              <td style={tdStyle}>{s.email}</td>
-              <td style={tdStyle}>{s.rollNumber}</td>
-              <td style={tdStyle}>{s.semester || "—"}</td>
-              <td style={tdStyle}>{s.department || "—"}</td>
-              <td style={tdStyle}>{s.joinedSubjectIds?.length || 0} / 8</td>
-            </tr>
-          ))}
-          {students.length === 0 && (
-            <tr><td colSpan={6} style={{ textAlign: "center", padding: 24, color: "#888" }}>No students added yet.</td></tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Card>
+      <PageTitle title={`All Students (${students.length})`} />
+      <input value={search} onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by name or roll number..."
+        style={{ width: "100%", maxWidth: 320, padding: "9px 14px", border: "1.5px solid #e5e7eb", borderRadius: 8, fontSize: 13, marginBottom: 16, boxSizing: "border-box" }} />
+      <StyledTable
+        headers={["Name", "Email", "Roll No", "Semester", "Department", "Subjects"]}
+        rows={filtered.map((s) => [
+          s.name, s.email, s.rollNumber,
+          s.semester || "—", s.department || "—",
+          <Badge text={`${s.joinedSubjectIds?.length || 0}/8`} color="#4f46e5" />
+        ])}
+        emptyMsg="No students added yet."
+      />
+    </Card>
   );
 }
-
-const cardStyle    = { background: "#fff", borderRadius: 10, padding: 28, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" };
-const headingStyle = { margin: "0 0 20px", color: "#1e50a0", fontSize: 18 };
-const tableStyle   = { width: "100%", borderCollapse: "collapse" };
-const thStyle      = { padding: "11px 14px", textAlign: "left", fontWeight: "600", fontSize: 13 };
-const tdStyle      = { padding: "10px 14px", fontSize: 13, borderBottom: "1px solid #eee" };

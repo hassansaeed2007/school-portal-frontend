@@ -2,12 +2,11 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
-import PasswordInput from "../components/PasswordInput";
 
 export default function Login() {
-  const [email, setEmail]     = useState("");
-  const [password, setPass]   = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -22,71 +21,143 @@ export default function Login() {
       if (data.user.role === "Student") navigate("/student");
     } catch (err) {
       toast.error(err.response?.data?.message || "Login failed.");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div style={pageStyle}>
-      {/* Left Panel */}
-      <div style={leftPanel}>
-        <div style={{ maxWidth: 400 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🏫</div>
-          <h1 style={{ color: "#fff", fontSize: 32, fontWeight: 800, margin: "0 0 12px" }}>School Portal</h1>
-          <p style={{ color: "rgba(255,255,255,0.85)", fontSize: 16, lineHeight: 1.6 }}>
-            A complete school management system for Admins, Teachers, and Students.
-          </p>
-          <div style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 12 }}>
-            {["📋 Manage attendance", "📝 Create tests & results", "📧 Email notifications", "🏫 Multi-school support"].map(f => (
-              <div key={f} style={{ color: "rgba(255,255,255,0.9)", fontSize: 14, display: "flex", alignItems: "center", gap: 8 }}>
-                <span>{f}</span>
-              </div>
-            ))}
-          </div>
+    <div style={styles.page}>
+      {/* Background Video */}
+      <video autoPlay muted loop playsInline style={styles.video}>
+        <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dark overlay */}
+      <div style={styles.overlay} />
+
+      {/* Floating animated shapes */}
+      <div style={{ ...styles.shape, width: 300, height: 300, top: "-80px", left: "-80px", animationDuration: "8s" }} />
+      <div style={{ ...styles.shape, width: 200, height: 200, bottom: "60px", right: "-60px", animationDuration: "6s" }} />
+
+      {/* Card */}
+      <div style={styles.card} className="login-card">
+        {/* Logo / Header */}
+        <div style={styles.header}>
+          <h2 style={styles.title}>School Portal</h2>
+          <p style={styles.subtitle}>Sign in to your account</p>
         </div>
+
+        <form onSubmit={handleLogin} style={styles.form}>
+          <div style={styles.inputGroup}>
+            <input style={styles.input} type="email" value={email}
+              onChange={(e) => setEmail(e.target.value)} required placeholder="Email Address" />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <input style={styles.input} type="password" value={password}
+              onChange={(e) => setPassword(e.target.value)} required placeholder="Password" />
+          </div>
+
+          <button type="submit" disabled={loading} style={styles.btn}>
+            {loading ? <span style={styles.spinner} /> : null}
+            {loading ? "Signing in..." : "Login →"}
+          </button>
+        </form>
+
+        <p style={styles.footer}>
+          Don't have an account?{" "}
+          <Link to="/signup" style={styles.link}>Sign Up</Link>
+        </p>
       </div>
 
-      {/* Right Panel */}
-      <div style={rightPanel}>
-        <div style={formCard}>
-          <h2 style={{ margin: "0 0 6px", fontSize: 26, fontWeight: 800, color: "#1a1a2e" }}>Welcome back</h2>
-          <p style={{ margin: "0 0 28px", color: "#888", fontSize: 14 }}>Sign in to your account</p>
-
-          <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: 18 }}>
-              <label style={labelStyle}>Email Address</label>
-              <input style={inputStyle} type="email" value={email}
-                onChange={e => setEmail(e.target.value)} required placeholder="Enter your email" />
-            </div>
-            <div style={{ marginBottom: 10 }}>
-              <label style={labelStyle}>Password</label>
-              <PasswordInput value={password} onChange={e => setPass(e.target.value)} placeholder="Enter your password" />
-            </div>
-
-            <div style={{ textAlign: "right", marginBottom: 22 }}>
-              <Link to="/forgot-password" style={{ color: "#1e50a0", fontSize: 13, textDecoration: "none", fontWeight: 600 }}>
-                Forgot password?
-              </Link>
-            </div>
-
-            <button type="submit" disabled={loading} style={btnStyle}>
-              {loading ? "Signing in..." : "Sign In →"}
-            </button>
-          </form>
-
-          <div style={{ textAlign: "center", marginTop: 24, fontSize: 14, color: "#666" }}>
-            Don't have an account?{" "}
-            <Link to="/signup" style={{ color: "#1e50a0", fontWeight: 700, textDecoration: "none" }}>Create one</Link>
-          </div>
-        </div>
-      </div>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .login-card {
+          animation: fadeSlideUp 0.7s ease forwards;
+        }
+        input:focus {
+          outline: none;
+          border-color: #6c63ff !important;
+          box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+        }
+        button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(108,99,255,0.5) !important;
+        }
+      `}</style>
     </div>
   );
 }
 
-const pageStyle  = { minHeight: "100vh", display: "flex", fontFamily: "'Segoe UI', sans-serif" };
-const leftPanel  = { flex: 1, background: "linear-gradient(135deg, #1a1a2e 0%, #1e50a0 50%, #2d7dd2 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 48, minHeight: "100vh" };
-const rightPanel = { flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 32, background: "#f8faff" };
-const formCard   = { background: "#fff", borderRadius: 20, padding: "44px 40px", boxShadow: "0 10px 40px rgba(0,0,0,0.08)", width: "100%", maxWidth: 420 };
-const labelStyle = { display: "block", fontWeight: 600, marginBottom: 6, fontSize: 13, color: "#444" };
-const inputStyle = { width: "100%", padding: "11px 14px", border: "1.5px solid #e8e8e8", borderRadius: 8, fontSize: 14, boxSizing: "border-box", outline: "none", transition: "border 0.2s", background: "#fafafa" };
-const btnStyle   = { width: "100%", padding: "13px", background: "linear-gradient(135deg, #1e50a0, #2d7dd2)", color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer", letterSpacing: 0.5 };
+const styles = {
+  page: {
+    minHeight: "100vh", display: "flex", alignItems: "center",
+    justifyContent: "center", position: "relative", overflow: "hidden",
+    background: "#0a0a1a",
+  },
+  video: {
+    position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
+    objectFit: "cover", zIndex: 0,
+  },
+  overlay: {
+    position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
+    background: "linear-gradient(135deg, rgba(10,10,40,0.85) 0%, rgba(30,10,60,0.8) 100%)",
+    zIndex: 1,
+  },
+  shape: {
+    position: "absolute", borderRadius: "50%",
+    background: "rgba(108,99,255,0.15)",
+    animation: "float 8s ease-in-out infinite",
+    zIndex: 1,
+  },
+  card: {
+    position: "relative", zIndex: 2,
+    background: "rgba(255,255,255,0.07)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 24, padding: "40px 36px",
+    width: "100%", maxWidth: 420,
+    boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
+  },
+  header: { textAlign: "center", marginBottom: 32 },
+  title: { color: "#fff", fontSize: 26, fontWeight: 800, margin: "0 0 6px" },
+  subtitle: { color: "rgba(255,255,255,0.6)", fontSize: 14, margin: 0 },
+  form: { display: "flex", flexDirection: "column", gap: 16 },
+  inputGroup: {
+    display: "flex", alignItems: "center",
+    background: "rgba(255,255,255,0.08)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: 12, padding: "0 16px", transition: "all 0.3s",
+  },
+  input: {
+    flex: 1, background: "none", border: "none", color: "#fff",
+    fontSize: 14, padding: "14px 0", outline: "none",
+  },
+  btn: {
+    background: "linear-gradient(135deg, #6c63ff, #a855f7)",
+    color: "#fff", border: "none", borderRadius: 12,
+    padding: "14px", fontSize: 16, fontWeight: 700,
+    cursor: "pointer", transition: "all 0.3s",
+    boxShadow: "0 4px 15px rgba(108,99,255,0.4)",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+  },
+  spinner: {
+    width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)",
+    borderTop: "2px solid #fff", borderRadius: "50%",
+    animation: "spin 0.8s linear infinite", display: "inline-block",
+  },
+  footer: { textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 24 },
+  link: { color: "#a78bfa", fontWeight: 700, textDecoration: "none" },
+};

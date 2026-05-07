@@ -42,7 +42,6 @@ export default function ForgotPassword() {
     <div style={pageStyle}>
       <div style={cardStyle}>
         <div style={headerStyle}>
-          <div style={{ fontSize: 36, marginBottom: 8 }}>🔐</div>
           <h2 style={{ color: "#fff", margin: 0, fontSize: 22 }}>Reset Password</h2>
           <p style={{ color: "rgba(255,255,255,0.8)", margin: "6px 0 0", fontSize: 13 }}>
             {step === 1 ? "Enter your email to receive a reset code" : `Code sent to ${email}`}

@@ -13,31 +13,27 @@ export default function VerifyOTP() {
   const [countdown, setCountdown] = useState(60);
   const inputs = useRef([]);
 
-  // Countdown timer for resend
+  useEffect(() => {
+    if (!email) navigate("/signup");
+  }, [email]);
+
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
     return () => clearTimeout(timer);
   }, [countdown]);
 
-  // Redirect if no email passed
-  useEffect(() => {
-    if (!email) navigate("/signup");
-  }, [email]);
-
   const handleChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return; // only digits
+    if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
-    newOtp[index] = value.slice(-1); // only 1 digit per box
+    newOtp[index] = value.slice(-1);
     setOtp(newOtp);
-    // Auto-focus next box
     if (value && index < 5) inputs.current[index + 1]?.focus();
   };
 
   const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
+    if (e.key === "Backspace" && !otp[index] && index > 0)
       inputs.current[index - 1]?.focus();
-    }
   };
 
   const handlePaste = (e) => {
@@ -50,15 +46,13 @@ export default function VerifyOTP() {
 
   const handleVerify = async () => {
     const code = otp.join("");
-    if (code.length < 6) { toast.error("Please enter the complete 6-digit code."); return; }
-
+    if (code.length < 6) { toast.error("Enter the complete 6-digit code."); return; }
     setLoading(true);
     try {
       const { data } = await api.post("/auth/verify-otp", { email, otp: code });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       toast.success("Email verified! Welcome to School Portal.");
-
       const role = data.user.role;
       if (role === "Admin")   navigate("/admin");
       if (role === "Teacher") navigate("/teacher");
@@ -88,72 +82,72 @@ export default function VerifyOTP() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f0f4ff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.1)", width: 420, overflow: "hidden" }}>
+    <div style={styles.page}>
+      <video autoPlay muted loop playsInline style={styles.video}>
+        <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+      </video>
+      <div style={styles.overlay} />
 
-        {/* Header */}
-        <div style={{ background: "#1e50a0", padding: "28px 0", textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>✉️</div>
-          <h2 style={{ color: "#fff", margin: 0, fontSize: 20 }}>Verify Your Email</h2>
-          <p style={{ color: "#c0d4ff", margin: "8px 0 0", fontSize: 13 }}>
-            We sent a 6-digit code to
-          </p>
-          <p style={{ color: "#fff", margin: "4px 0 0", fontWeight: "bold", fontSize: 14 }}>{email}</p>
+      <div style={styles.card} className="otp-card">
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <h2 style={styles.title}>Verify Your Email</h2>
+          <p style={styles.subtitle}>We sent a 6-digit code to</p>
+          <p style={{ color: "#a78bfa", fontWeight: 700, fontSize: 15, margin: "4px 0 0" }}>{email}</p>
         </div>
 
-        <div style={{ padding: "32px 36px" }}>
-          <p style={{ textAlign: "center", color: "#555", fontSize: 13, marginBottom: 24 }}>
-            Enter the verification code below. It expires in 10 minutes.
-          </p>
+        {/* OTP Boxes */}
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 28 }} onPaste={handlePaste}>
+          {otp.map((digit, i) => (
+            <input key={i} ref={(el) => (inputs.current[i] = el)}
+              type="text" inputMode="numeric" maxLength={1} value={digit}
+              onChange={(e) => handleChange(i, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(i, e)}
+              style={{
+                width: 50, height: 58, textAlign: "center", fontSize: 26, fontWeight: 800,
+                background: digit ? "rgba(108,99,255,0.3)" : "rgba(255,255,255,0.08)",
+                border: digit ? "2px solid #6c63ff" : "2px solid rgba(255,255,255,0.2)",
+                borderRadius: 12, color: "#fff", outline: "none", transition: "all 0.2s",
+              }} />
+          ))}
+        </div>
 
-          {/* OTP Input Boxes */}
-          <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 28 }} onPaste={handlePaste}>
-            {otp.map((digit, i) => (
-              <input
-                key={i}
-                ref={(el) => (inputs.current[i] = el)}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(i, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(i, e)}
-                style={{
-                  width: 48, height: 56, textAlign: "center", fontSize: 24, fontWeight: "bold",
-                  border: digit ? "2px solid #1e50a0" : "2px solid #ddd",
-                  borderRadius: 8, outline: "none", background: digit ? "#f0f4ff" : "#fff",
-                  transition: "all 0.15s"
-                }}
-              />
-            ))}
-          </div>
+        <button onClick={handleVerify} disabled={loading} style={styles.btn}>
+          {loading ? "Verifying..." : "Verify & Continue →"}
+        </button>
 
-          {/* Verify Button */}
-          <button onClick={handleVerify} disabled={loading}
-            style={{ width: "100%", padding: "12px", background: "#1e50a0", color: "#fff",
-              border: "none", borderRadius: 6, fontSize: 15, fontWeight: "bold", cursor: "pointer", marginBottom: 16 }}>
-            {loading ? "Verifying..." : "Verify & Create Account"}
-          </button>
+        <div style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+          Didn't receive the code?{" "}
+          {countdown > 0 ? (
+            <span style={{ color: "rgba(255,255,255,0.3)" }}>Resend in {countdown}s</span>
+          ) : (
+            <button onClick={handleResend} disabled={resending}
+              style={{ background: "none", border: "none", color: "#a78bfa", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
+              {resending ? "Sending..." : "Resend Code"}
+            </button>
+          )}
+        </div>
 
-          {/* Resend */}
-          <div style={{ textAlign: "center", fontSize: 13, color: "#666" }}>
-            Didn't receive the code?{" "}
-            {countdown > 0 ? (
-              <span style={{ color: "#999" }}>Resend in {countdown}s</span>
-            ) : (
-              <button onClick={handleResend} disabled={resending}
-                style={{ background: "none", border: "none", color: "#1e50a0", fontWeight: "bold", cursor: "pointer", fontSize: 13 }}>
-                {resending ? "Sending..." : "Resend Code"}
-              </button>
-            )}
-          </div>
-
-          {/* Back to signup */}
-          <div style={{ textAlign: "center", marginTop: 16, fontSize: 13 }}>
-            <a href="/signup" style={{ color: "#888", textDecoration: "none" }}>← Back to Sign Up</a>
-          </div>
+        <div style={{ textAlign: "center", marginTop: 14 }}>
+          <a href="/signup" style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, textDecoration: "none" }}>← Back to Sign Up</a>
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes bounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+        .otp-card { animation: fadeSlideUp 0.7s ease forwards; }
+        button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+      `}</style>
     </div>
   );
 }
+
+const styles = {
+  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "#0a0a1a" },
+  video: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 },
+  overlay: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(135deg, rgba(10,10,40,0.88), rgba(30,10,60,0.85))", zIndex: 1 },
+  card: { position: "relative", zIndex: 2, background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 24, padding: "40px 36px", width: "100%", maxWidth: 420, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" },
+  title: { color: "#fff", fontSize: 24, fontWeight: 800, margin: "10px 0 6px" },
+  subtitle: { color: "rgba(255,255,255,0.5)", fontSize: 14, margin: 0 },
+  btn: { width: "100%", background: "linear-gradient(135deg, #6c63ff, #a855f7)", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 16, fontWeight: 700, cursor: "pointer", transition: "all 0.3s", boxShadow: "0 4px 15px rgba(108,99,255,0.4)" },
+};

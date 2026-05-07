@@ -27,7 +27,6 @@ export default function MyResults() {
 
       {results.length === 0 ? (
         <div style={{ textAlign: "center", padding: 40, color: "#888" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
           <p>No results announced yet.</p>
         </div>
       ) : (

@@ -2,11 +2,10 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
-import PasswordInput from "../components/PasswordInput";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [role, setRole]     = useState("Student");
+  const [role, setRole] = useState("Student");
   const [loading, setLoading] = useState(false);
   const [schoolName, setSchoolName] = useState("");
   const [form, setForm] = useState({
@@ -23,8 +22,12 @@ export default function Signup() {
       try {
         const { data } = await api.get(`/auth/school/${code}`);
         setSchoolName(data.name);
-      } catch { setSchoolName("Invalid school code"); }
-    } else { setSchoolName(""); }
+      } catch {
+        setSchoolName("Invalid school code");
+      }
+    } else {
+      setSchoolName("");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -37,129 +40,130 @@ export default function Signup() {
       navigate("/verify-otp", { state: { email: form.email } });
     } catch (err) {
       toast.error(err.response?.data?.message || "Signup failed.");
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const roleConfig = {
-    Admin:   { color: "#1e50a0", gradient: "linear-gradient(135deg, #1a1a2e, #1e50a0)", icon: "👑" },
-    Teacher: { color: "#1a7a4a", gradient: "linear-gradient(135deg, #0d3320, #1a7a4a)", icon: "👨‍🏫" },
-    Student: { color: "#7a3a1a", gradient: "linear-gradient(135deg, #3a1a0d, #7a3a1a)", icon: "🎓" },
+    Admin:   { color: "#6c63ff" },
+    Teacher: { color: "#10b981" },
+    Student: { color: "#f59e0b" },
   };
-  const rc = roleConfig[role];
+  const { color } = roleConfig[role];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f8faff", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Segoe UI', sans-serif" }}>
-      <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 10px 40px rgba(0,0,0,0.1)", width: "100%", maxWidth: 560, overflow: "hidden" }}>
+    <div style={styles.page}>
+      <video autoPlay muted loop playsInline style={styles.video}>
+        <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4" />
+      </video>
+      <div style={styles.overlay} />
 
-        {/* Header */}
-        <div style={{ background: rc.gradient, padding: "28px 32px", display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ fontSize: 40 }}>{rc.icon}</div>
-          <div>
-            <h2 style={{ color: "#fff", margin: 0, fontSize: 22, fontWeight: 800 }}>Create Account</h2>
-            <p style={{ color: "rgba(255,255,255,0.8)", margin: "4px 0 0", fontSize: 13 }}>School Management Portal</p>
-          </div>
+      <div style={styles.card} className="signup-card">
+        <div style={{ textAlign: "center", marginBottom: 24 }}>
+          <h2 style={styles.title}>Create Account</h2>
+          <p style={styles.subtitle}>School Management Portal</p>
         </div>
 
         {/* Role Tabs */}
-        <div style={{ display: "flex", background: "#f0f4ff" }}>
+        <div style={styles.tabs}>
           {["Admin", "Teacher", "Student"].map((r) => (
-            <button key={r} onClick={() => setRole(r)}
-              style={{ flex: 1, padding: "13px 0", border: "none", cursor: "pointer", fontWeight: role === r ? 700 : 500,
-                background: role === r ? "#fff" : "transparent",
-                color: role === r ? roleConfig[r].color : "#888",
-                fontSize: 14, borderBottom: role === r ? `3px solid ${roleConfig[r].color}` : "3px solid transparent",
-                transition: "all 0.2s" }}>
-              {roleConfig[r].icon} {r}
+            <button key={r} onClick={() => setRole(r)} style={{
+              ...styles.tab,
+              background: role === r ? roleConfig[r].color : "rgba(255,255,255,0.05)",
+              color: role === r ? "#fff" : "rgba(255,255,255,0.5)",
+              transform: role === r ? "scale(1.05)" : "scale(1)",
+            }}>
+              {r}
             </button>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} style={{ padding: "24px 32px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <form onSubmit={handleSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {/* Name */}
+          <div style={{ gridColumn: "1 / -1" }}>
+            <input style={styles.input} name="name" value={form.name} onChange={handleChange}
+              required placeholder={role === "Admin" ? "School Name" : "Full Name"} />
+          </div>
 
+          <input style={styles.input} name="email" type="email" value={form.email}
+            onChange={handleChange} required placeholder="Email" />
+
+          <input style={styles.input} name="phone" value={form.phone}
+            onChange={handleChange} placeholder="Phone" />
+
+          <input style={styles.input} name="password" type="password" value={form.password}
+            onChange={handleChange} required placeholder="Password" />
+
+          <input style={styles.input} name="confirmPassword" type="password" value={form.confirmPassword}
+            onChange={handleChange} required placeholder="Confirm Password" />
+
+          {role === "Teacher" && (<>
+            <input style={styles.input} name="qualification" value={form.qualification}
+              onChange={handleChange} placeholder="Qualification" />
+            <input style={styles.input} name="department" value={form.department}
+              onChange={handleChange} placeholder="Department" />
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={labelStyle}>{role === "Admin" ? "School Name *" : "Full Name *"}</label>
-              <input style={inputStyle} name="name" value={form.name} onChange={handleChange} required
-                placeholder={role === "Admin" ? "Enter school name" : "Enter your full name"} />
+              <input style={styles.input} name="schoolCode" value={form.schoolCode}
+                onChange={handleSchoolCode} required placeholder="School Code (from Admin)" />
+              {schoolName && <p style={{ margin: "4px 0 0 4px", fontSize: 12, color: schoolName === "Invalid school code" ? "#f87171" : "#34d399" }}>
+                {schoolName === "Invalid school code" ? "Invalid" : "School: "}{schoolName !== "Invalid school code" && schoolName}
+              </p>}
             </div>
+          </>)}
 
-            <div>
-              <label style={labelStyle}>Email *</label>
-              <input style={inputStyle} name="email" type="email" value={form.email} onChange={handleChange} required placeholder="Enter email" />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Phone</label>
-              <input style={inputStyle} name="phone" value={form.phone} onChange={handleChange} placeholder="03XX-XXXXXXX" />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Password *</label>
-              <PasswordInput name="password" value={form.password} onChange={handleChange} placeholder="Create password" />
-            </div>
-
-            <div>
-              <label style={labelStyle}>Confirm Password *</label>
-              <PasswordInput name="confirmPassword" value={form.confirmPassword} onChange={handleChange} placeholder="Repeat password" />
-            </div>
-
-            {role === "Teacher" && (<>
-              <div>
-                <label style={labelStyle}>Qualification</label>
-                <input style={inputStyle} name="qualification" value={form.qualification} onChange={handleChange} placeholder="e.g. PhD CS" />
-              </div>
-              <div>
-                <label style={labelStyle}>Department</label>
-                <input style={inputStyle} name="department" value={form.department} onChange={handleChange} placeholder="e.g. CS Dept" />
-              </div>
-            </>)}
-
-            {role === "Student" && (<>
-              <div>
-                <label style={labelStyle}>Roll Number *</label>
-                <input style={inputStyle} name="rollNumber" value={form.rollNumber} onChange={handleChange} required placeholder="e.g. CS-2023-01" />
-              </div>
-              <div>
-                <label style={labelStyle}>Semester</label>
-                <input style={inputStyle} name="semester" value={form.semester} onChange={handleChange} placeholder="e.g. 2nd Semester" />
-              </div>
-            </>)}
-
-            {(role === "Teacher" || role === "Student") && (
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label style={labelStyle}>School Code * <span style={{ fontWeight: 400, color: "#999" }}>(get from your Admin)</span></label>
-                <input style={inputStyle} name="schoolCode" value={form.schoolCode} onChange={handleSchoolCode} required placeholder="Paste school code here" />
-                {schoolName && (
-                  <p style={{ margin: "5px 0 0", fontSize: 12, fontWeight: 600, color: schoolName === "Invalid school code" ? "#e74c3c" : "#1a7a4a" }}>
-                    {schoolName === "Invalid school code" ? "❌ " : "✅ "}{schoolName}
-                  </p>
-                )}
-              </div>
-            )}
-
+          {role === "Student" && (<>
+            <input style={styles.input} name="rollNumber" value={form.rollNumber}
+              onChange={handleChange} required placeholder="Roll Number" />
+            <input style={styles.input} name="semester" value={form.semester}
+              onChange={handleChange} placeholder="Semester" />
             <div style={{ gridColumn: "1 / -1" }}>
-              <button type="submit" disabled={loading}
-                style={{ width: "100%", padding: "13px", background: rc.gradient, color: "#fff", border: "none", borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
-                {loading ? "Creating Account..." : `Sign Up as ${role} →`}
-              </button>
+              <input style={styles.input} name="schoolCode" value={form.schoolCode}
+                onChange={handleSchoolCode} required placeholder="School Code (from Admin)" />
+              {schoolName && <p style={{ margin: "4px 0 0 4px", fontSize: 12, color: schoolName === "Invalid school code" ? "#f87171" : "#34d399" }}>
+                {schoolName === "Invalid school code" ? "Invalid" : "School: "}{schoolName !== "Invalid school code" && schoolName}
+              </p>}
             </div>
+          </>)}
 
-            {(role === "Teacher" || role === "Student") && (
-              <div style={{ gridColumn: "1 / -1", background: "#f0fff4", border: "1px solid #b2dfdb", borderRadius: 8, padding: "10px 14px", fontSize: 12, color: "#1a7a4a" }}>
-                ✉️ A verification code will be sent to your email address.
-              </div>
-            )}
+          <div style={{ gridColumn: "1 / -1" }}>
+            <button type="submit" disabled={loading}
+              style={{ ...styles.btn, background: `linear-gradient(135deg, ${color}, ${color}cc)` }}>
+              {loading ? "Creating Account..." : `Sign Up as ${role} →`}
+            </button>
           </div>
         </form>
 
-        <div style={{ textAlign: "center", padding: "0 0 24px", fontSize: 13, color: "#888" }}>
+        <p style={styles.footer}>
           Already have an account?{" "}
-          <Link to="/" style={{ color: rc.color, fontWeight: 700, textDecoration: "none" }}>Sign In</Link>
-        </div>
+          <Link to="/" style={{ color: "#a78bfa", fontWeight: 700, textDecoration: "none" }}>Login</Link>
+        </p>
       </div>
+
+      <style>{`
+        @keyframes fadeSlideUp {
+          from { opacity: 0; transform: translateY(40px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .signup-card { animation: fadeSlideUp 0.7s ease forwards; }
+        input::placeholder { color: rgba(255,255,255,0.4); }
+        input:focus { outline: none; border-color: ${color} !important; box-shadow: 0 0 0 3px ${color}33; }
+        button:hover:not(:disabled) { transform: translateY(-2px); opacity: 0.95; }
+      `}</style>
     </div>
   );
 }
 
-const labelStyle = { display: "block", fontWeight: 600, marginBottom: 5, fontSize: 13, color: "#444" };
-const inputStyle = { width: "100%", padding: "10px 12px", border: "1.5px solid #e8e8e8", borderRadius: 8, fontSize: 14, boxSizing: "border-box", outline: "none", background: "#fafafa" };
+const styles = {
+  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "#0a0a1a", padding: 20 },
+  video: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 },
+  overlay: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(135deg, rgba(10,10,40,0.88) 0%, rgba(30,10,60,0.85) 100%)", zIndex: 1 },
+  card: { position: "relative", zIndex: 2, background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 24, padding: "36px 32px", width: "100%", maxWidth: 520, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" },
+  title: { color: "#fff", fontSize: 24, fontWeight: 800, margin: "8px 0 4px" },
+  subtitle: { color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 },
+  tabs: { display: "flex", gap: 8, marginBottom: 20 },
+  tab: { flex: 1, padding: "10px 6px", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 13, transition: "all 0.3s" },
+  input: { width: "100%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "12px 14px", color: "#fff", fontSize: 13, boxSizing: "border-box", transition: "all 0.3s" },
+  btn: { width: "100%", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all 0.3s", boxShadow: "0 4px 15px rgba(0,0,0,0.3)" },
+  footer: { textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 20 },
+};

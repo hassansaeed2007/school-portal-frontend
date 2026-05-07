@@ -1,45 +1,29 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
+import { Card, PageTitle, StyledTable } from "../../components/UI";
 
 export default function ViewTeachers() {
   const [teachers, setTeachers] = useState([]);
+  const [search, setSearch]     = useState("");
 
-  useEffect(() => {
-    api.get("/admin/teachers").then((r) => setTeachers(r.data));
-  }, []);
+  useEffect(() => { api.get("/admin/teachers").then((r) => setTeachers(r.data)); }, []);
+
+  const filtered = teachers.filter((t) =>
+    t.name.toLowerCase().includes(search.toLowerCase()) ||
+    t.email.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
-    <div style={cardStyle}>
-      <h3 style={headingStyle}>All Teachers ({teachers.length})</h3>
-      <table style={tableStyle}>
-        <thead>
-          <tr style={{ background: "#1e50a0", color: "#fff" }}>
-            {["Name", "Email", "Phone", "Qualification", "Department"].map((h) => (
-              <th key={h} style={thStyle}>{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {teachers.map((t, i) => (
-            <tr key={t._id} style={{ background: i % 2 === 0 ? "#f8faff" : "#fff" }}>
-              <td style={tdStyle}>{t.name}</td>
-              <td style={tdStyle}>{t.email}</td>
-              <td style={tdStyle}>{t.phone || "—"}</td>
-              <td style={tdStyle}>{t.qualification || "—"}</td>
-              <td style={tdStyle}>{t.department || "—"}</td>
-            </tr>
-          ))}
-          {teachers.length === 0 && (
-            <tr><td colSpan={5} style={{ textAlign: "center", padding: 24, color: "#888" }}>No teachers added yet.</td></tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Card>
+      <PageTitle title={`All Teachers (${teachers.length})`} />
+      <input value={search} onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search by name or email..."
+        style={{ width: "100%", maxWidth: 320, padding: "9px 14px", border: "1.5px solid #e5e7eb", borderRadius: 8, fontSize: 13, marginBottom: 16, boxSizing: "border-box" }} />
+      <StyledTable
+        headers={["Name", "Email", "Phone", "Qualification", "Department"]}
+        rows={filtered.map((t) => [t.name, t.email, t.phone || "—", t.qualification || "—", t.department || "—"])}
+        emptyMsg="No teachers added yet."
+      />
+    </Card>
   );
 }
-
-const cardStyle    = { background: "#fff", borderRadius: 10, padding: 28, boxShadow: "0 2px 12px rgba(0,0,0,0.07)" };
-const headingStyle = { margin: "0 0 20px", color: "#1e50a0", fontSize: 18 };
-const tableStyle   = { width: "100%", borderCollapse: "collapse" };
-const thStyle      = { padding: "11px 14px", textAlign: "left", fontWeight: "600", fontSize: 13 };
-const tdStyle      = { padding: "10px 14px", fontSize: 13, borderBottom: "1px solid #eee" };

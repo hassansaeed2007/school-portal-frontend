@@ -15,7 +15,7 @@ export default function PasswordInput({ name, value, onChange, placeholder = "En
       />
       <button type="button" onClick={() => setShow(!show)}
         style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#888", fontSize: 16, padding: 0 }}>
-        {show ? "🙈" : "👁️"}
+        {show ? "Hide" : "Show"}
       </button>
     </div>
   );
