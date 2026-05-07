@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import VideoBackground from "../components/VideoBackground";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const [role, setRole] = useState("Student");
-  const [loading, setLoading] = useState(false);
+  const [role, setRole]           = useState("Student");
+  const [loading, setLoading]     = useState(false);
   const [schoolName, setSchoolName] = useState("");
+  const [showPass, setShowPass]   = useState(false);
   const [form, setForm] = useState({
     name: "", email: "", password: "", confirmPassword: "", phone: "",
     qualification: "", department: "", rollNumber: "", semester: "", schoolCode: "",
@@ -33,6 +35,7 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) { toast.error("Passwords do not match."); return; }
+    if (form.password.length < 6) { toast.error("Password must be at least 6 characters."); return; }
     setLoading(true);
     try {
       const { data } = await api.post("/auth/signup", { ...form, role });
@@ -45,121 +48,159 @@ export default function Signup() {
     }
   };
 
-  const roleConfig = {
-    Admin:   { color: "#6c63ff" },
-    Teacher: { color: "#10b981" },
-    Student: { color: "#f59e0b" },
-  };
-  const { color } = roleConfig[role];
+  const roles = [
+    { key: "Admin",   color: "#6366f1" },
+    { key: "Teacher", color: "#10b981" },
+    { key: "Student", color: "#f59e0b" },
+  ];
+  const activeColor = roles.find((r) => r.key === role)?.color || "#6366f1";
 
   return (
-    <div style={styles.page}>
-      <div style={{ ...styles.shape, width: 350, height: 350, top: "-100px", left: "-100px" }} />
-      <div style={{ ...styles.shape, width: 250, height: 250, bottom: "40px", right: "-80px" }} />
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", padding: "20px" }}>
+      <VideoBackground src="/vedio 1.mp4" opacity={0.6} />
 
-      <div style={styles.card} className="signup-card">
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <h2 style={styles.title}>Create Account</h2>
-          <p style={styles.subtitle}>School Management Portal</p>
+      <div className="glass fade-up" style={{
+        position: "relative", zIndex: 2,
+        width: "100%", maxWidth: 540,
+        padding: "40px 40px",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <h1 style={{ color: "#fff", fontSize: 24, fontWeight: 800 }}>Create Account</h1>
+          <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, marginTop: 5 }}>School Management Portal</p>
         </div>
 
-        {/* Role Tabs */}
-        <div style={styles.tabs}>
-          {["Admin", "Teacher", "Student"].map((r) => (
-            <button key={r} onClick={() => setRole(r)} style={{
-              ...styles.tab,
-              background: role === r ? roleConfig[r].color : "rgba(255,255,255,0.05)",
-              color: role === r ? "#fff" : "rgba(255,255,255,0.5)",
-              transform: role === r ? "scale(1.05)" : "scale(1)",
+        {/* Role selector */}
+        <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 4 }}>
+          {roles.map((r) => (
+            <button key={r.key} type="button" onClick={() => setRole(r.key)} style={{
+              flex: 1, padding: "10px 0", border: "none", borderRadius: 9,
+              background: role === r.key ? r.color : "transparent",
+              color: role === r.key ? "#fff" : "rgba(255,255,255,0.45)",
+              fontWeight: 700, fontSize: 13, cursor: "pointer",
+              boxShadow: role === r.key ? `0 4px 12px ${r.color}55` : "none",
+              transition: "all 0.25s",
             }}>
-              {r}
+              {r.key}
             </button>
           ))}
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {/* Name */}
-          <div style={{ gridColumn: "1 / -1" }}>
-            <input style={styles.input} name="name" value={form.name} onChange={handleChange}
-              required placeholder={role === "Admin" ? "School Name" : "Full Name"} />
-          </div>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
 
-          <input style={styles.input} name="email" type="email" value={form.email}
-            onChange={handleChange} required placeholder="Email" />
-
-          <input style={styles.input} name="phone" value={form.phone}
-            onChange={handleChange} placeholder="Phone" />
-
-          <input style={styles.input} name="password" type="password" value={form.password}
-            onChange={handleChange} required placeholder="Password" />
-
-          <input style={styles.input} name="confirmPassword" type="password" value={form.confirmPassword}
-            onChange={handleChange} required placeholder="Confirm Password" />
-
-          {role === "Teacher" && (<>
-            <input style={styles.input} name="qualification" value={form.qualification}
-              onChange={handleChange} placeholder="Qualification" />
-            <input style={styles.input} name="department" value={form.department}
-              onChange={handleChange} placeholder="Department" />
             <div style={{ gridColumn: "1 / -1" }}>
-              <input style={styles.input} name="schoolCode" value={form.schoolCode}
-                onChange={handleSchoolCode} required placeholder="School Code (from Admin)" />
-              {schoolName && <p style={{ margin: "4px 0 0 4px", fontSize: 12, color: schoolName === "Invalid school code" ? "#f87171" : "#34d399" }}>
-                {schoolName === "Invalid school code" ? "Invalid" : "School: "}{schoolName !== "Invalid school code" && schoolName}
-              </p>}
+              <label style={labelStyle}>{role === "Admin" ? "School Name" : "Full Name"} *</label>
+              <input style={inputStyle} name="name" value={form.name} onChange={handleChange} required
+                placeholder={role === "Admin" ? "e.g. Prestige School" : "e.g. Ali Hassan"} />
             </div>
-          </>)}
 
-          {role === "Student" && (<>
-            <input style={styles.input} name="rollNumber" value={form.rollNumber}
-              onChange={handleChange} required placeholder="Roll Number" />
-            <input style={styles.input} name="semester" value={form.semester}
-              onChange={handleChange} placeholder="Semester" />
-            <div style={{ gridColumn: "1 / -1" }}>
-              <input style={styles.input} name="schoolCode" value={form.schoolCode}
-                onChange={handleSchoolCode} required placeholder="School Code (from Admin)" />
-              {schoolName && <p style={{ margin: "4px 0 0 4px", fontSize: 12, color: schoolName === "Invalid school code" ? "#f87171" : "#34d399" }}>
-                {schoolName === "Invalid school code" ? "Invalid" : "School: "}{schoolName !== "Invalid school code" && schoolName}
-              </p>}
+            <div>
+              <label style={labelStyle}>Email *</label>
+              <input style={inputStyle} name="email" type="email" value={form.email} onChange={handleChange} required placeholder="you@school.edu" />
             </div>
-          </>)}
 
-          <div style={{ gridColumn: "1 / -1" }}>
-            <button type="submit" disabled={loading}
-              style={{ ...styles.btn, background: `linear-gradient(135deg, ${color}, ${color}cc)` }}>
-              {loading ? "Creating Account..." : `Sign Up as ${role} →`}
-            </button>
+            <div>
+              <label style={labelStyle}>Phone</label>
+              <input style={inputStyle} name="phone" value={form.phone} onChange={handleChange} placeholder="03XX-XXXXXXX" />
+            </div>
+
+            <div style={{ position: "relative" }}>
+              <label style={labelStyle}>Password *</label>
+              <input style={{ ...inputStyle, paddingRight: 52 }} name="password" type={showPass ? "text" : "password"} value={form.password} onChange={handleChange} required placeholder="Min 6 characters" />
+              <button type="button" onClick={() => setShowPass(!showPass)}
+                style={{ position: "absolute", right: 12, bottom: 13, background: "none", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 12 }}>
+                {showPass ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            <div>
+              <label style={labelStyle}>Confirm Password *</label>
+              <input style={inputStyle} name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} required placeholder="Repeat password" />
+            </div>
+
+            {role === "Teacher" && (<>
+              <div>
+                <label style={labelStyle}>Qualification</label>
+                <input style={inputStyle} name="qualification" value={form.qualification} onChange={handleChange} placeholder="e.g. PhD CS" />
+              </div>
+              <div>
+                <label style={labelStyle}>Department</label>
+                <input style={inputStyle} name="department" value={form.department} onChange={handleChange} placeholder="e.g. CS Dept" />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>School Code * <span style={{ fontWeight: 400, color: "rgba(255,255,255,0.35)" }}>(get from Admin)</span></label>
+                <input style={inputStyle} name="schoolCode" value={form.schoolCode} onChange={handleSchoolCode} required placeholder="Paste school code here" />
+                {schoolName && <p style={{ marginTop: 5, fontSize: 12, color: schoolName === "Invalid school code" ? "#f87171" : "#34d399", fontWeight: 600 }}>
+                  {schoolName === "Invalid school code" ? "Invalid code" : `School: ${schoolName}`}
+                </p>}
+              </div>
+            </>)}
+
+            {role === "Student" && (<>
+              <div>
+                <label style={labelStyle}>Roll Number *</label>
+                <input style={inputStyle} name="rollNumber" value={form.rollNumber} onChange={handleChange} required placeholder="e.g. CS-2023-01" />
+              </div>
+              <div>
+                <label style={labelStyle}>Semester</label>
+                <input style={inputStyle} name="semester" value={form.semester} onChange={handleChange} placeholder="e.g. 2nd Semester" />
+              </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={labelStyle}>School Code * <span style={{ fontWeight: 400, color: "rgba(255,255,255,0.35)" }}>(get from Admin)</span></label>
+                <input style={inputStyle} name="schoolCode" value={form.schoolCode} onChange={handleSchoolCode} required placeholder="Paste school code here" />
+                {schoolName && <p style={{ marginTop: 5, fontSize: 12, color: schoolName === "Invalid school code" ? "#f87171" : "#34d399", fontWeight: 600 }}>
+                  {schoolName === "Invalid school code" ? "Invalid code" : `School: ${schoolName}`}
+                </p>}
+              </div>
+            </>)}
+
+            <div style={{ gridColumn: "1 / -1", marginTop: 4 }}>
+              <button type="submit" disabled={loading} style={{ ...btnStyle, background: `linear-gradient(135deg, ${activeColor}, ${activeColor}cc)`, boxShadow: `0 4px 20px ${activeColor}44` }}>
+                {loading ? <span style={spinnerStyle} /> : null}
+                {loading ? "Creating Account..." : `Sign Up as ${role}`}
+              </button>
+            </div>
           </div>
         </form>
 
-        <p style={styles.footer}>
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 20 }}>
           Already have an account?{" "}
           <Link to="/" style={{ color: "#a78bfa", fontWeight: 700, textDecoration: "none" }}>Login</Link>
         </p>
       </div>
 
       <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to   { opacity: 1; transform: translateY(0); }
+        input::placeholder { color: rgba(255,255,255,0.25); }
+        input:focus { border-color: rgba(139,92,246,0.6) !important; box-shadow: 0 0 0 3px rgba(139,92,246,0.15); }
+        @media (max-width: 560px) {
+          form > div { grid-template-columns: 1fr !important; }
         }
-        .signup-card { animation: fadeSlideUp 0.7s ease forwards; }
-        input::placeholder { color: rgba(255,255,255,0.4); }
-        input:focus { outline: none; border-color: ${color} !important; box-shadow: 0 0 0 3px ${color}33; }
-        button:hover:not(:disabled) { transform: translateY(-2px); opacity: 0.95; }
       `}</style>
     </div>
   );
 }
 
-const styles = {
-  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)", padding: 20 },
-  card: { position: "relative", zIndex: 2, background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 24, padding: "36px 32px", width: "100%", maxWidth: 520, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" },
-  title: { color: "#fff", fontSize: 24, fontWeight: 800, margin: "8px 0 4px" },
-  subtitle: { color: "rgba(255,255,255,0.5)", fontSize: 13, margin: 0 },
-  tabs: { display: "flex", gap: 8, marginBottom: 20 },
-  tab: { flex: 1, padding: "10px 6px", border: "none", borderRadius: 10, cursor: "pointer", fontWeight: 700, fontSize: 13, transition: "all 0.3s" },
-  input: { width: "100%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 10, padding: "12px 14px", color: "#fff", fontSize: 13, boxSizing: "border-box", transition: "all 0.3s" },
-  btn: { width: "100%", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 15, fontWeight: 700, cursor: "pointer", transition: "all 0.3s", boxShadow: "0 4px 15px rgba(0,0,0,0.3)" },
-  footer: { textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 20 },
+const labelStyle = { display: "block", color: "rgba(255,255,255,0.65)", fontSize: 13, fontWeight: 600, marginBottom: 6 };
+const inputStyle = {
+  width: "100%", padding: "12px 14px",
+  background: "rgba(255,255,255,0.07)",
+  border: "1px solid rgba(255,255,255,0.13)",
+  borderRadius: 10, color: "#fff", fontSize: 13,
+  boxSizing: "border-box", transition: "all 0.2s",
+};
+const btnStyle = {
+  width: "100%", padding: "14px",
+  color: "#fff", border: "none", borderRadius: 12,
+  fontSize: 15, fontWeight: 700, cursor: "pointer",
+  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+};
+const spinnerStyle = {
+  width: 17, height: 17,
+  border: "2px solid rgba(255,255,255,0.3)",
+  borderTop: "2px solid #fff",
+  borderRadius: "50%",
+  animation: "spin 0.8s linear infinite",
+  display: "inline-block",
 };

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import VideoBackground from "../components/VideoBackground";
 
 export default function VerifyOTP() {
   const navigate  = useNavigate();
@@ -13,14 +14,11 @@ export default function VerifyOTP() {
   const [countdown, setCountdown] = useState(60);
   const inputs = useRef([]);
 
-  useEffect(() => {
-    if (!email) navigate("/signup");
-  }, [email]);
-
+  useEffect(() => { if (!email) navigate("/signup"); }, [email]);
   useEffect(() => {
     if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setCountdown(countdown - 1), 1000);
+    return () => clearTimeout(t);
   }, [countdown]);
 
   const handleChange = (index, value) => {
@@ -38,10 +36,7 @@ export default function VerifyOTP() {
 
   const handlePaste = (e) => {
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (pasted.length === 6) {
-      setOtp(pasted.split(""));
-      inputs.current[5]?.focus();
-    }
+    if (pasted.length === 6) { setOtp(pasted.split("")); inputs.current[5]?.focus(); }
   };
 
   const handleVerify = async () => {
@@ -52,7 +47,7 @@ export default function VerifyOTP() {
       const { data } = await api.post("/auth/verify-otp", { email, otp: code });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      toast.success("Email verified! Welcome to School Portal.");
+      toast.success("Email verified! Welcome.");
       const role = data.user.role;
       if (role === "Admin")   navigate("/admin");
       if (role === "Teacher") navigate("/teacher");
@@ -61,9 +56,7 @@ export default function VerifyOTP() {
       toast.error(err.response?.data?.message || "Verification failed.");
       setOtp(["", "", "", "", "", ""]);
       inputs.current[0]?.focus();
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   const handleResend = async () => {
@@ -76,20 +69,23 @@ export default function VerifyOTP() {
       inputs.current[0]?.focus();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to resend.");
-    } finally {
-      setResending(false);
-    }
+    } finally { setResending(false); }
   };
 
   return (
-    <div style={styles.page}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", padding: 20 }}>
+      <VideoBackground src="/vedio 1.mp4" opacity={0.6} />
 
-      <div style={styles.card} className="otp-card">
-        <div style={{ textAlign: "center", marginBottom: 28 }}>
-          <h2 style={styles.title}>Verify Your Email</h2>
-          <p style={styles.subtitle}>We sent a 6-digit code to</p>
-          <p style={{ color: "#a78bfa", fontWeight: 700, fontSize: 15, margin: "4px 0 0" }}>{email}</p>
-        </div>
+      <div className="glass fade-up" style={{
+        position: "relative", zIndex: 2,
+        width: "100%", maxWidth: 420,
+        padding: "44px 40px",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
+        textAlign: "center",
+      }}>
+        <h2 style={{ color: "#fff", fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Verify Your Email</h2>
+        <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 13, marginBottom: 6 }}>We sent a 6-digit code to</p>
+        <p style={{ color: "#a78bfa", fontWeight: 700, fontSize: 14, marginBottom: 32 }}>{email}</p>
 
         {/* OTP Boxes */}
         <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 28 }} onPaste={handlePaste}>
@@ -99,49 +95,45 @@ export default function VerifyOTP() {
               onChange={(e) => handleChange(i, e.target.value)}
               onKeyDown={(e) => handleKeyDown(i, e)}
               style={{
-                width: 50, height: 58, textAlign: "center", fontSize: 26, fontWeight: 800,
-                background: digit ? "rgba(108,99,255,0.3)" : "rgba(255,255,255,0.08)",
-                border: digit ? "2px solid #6c63ff" : "2px solid rgba(255,255,255,0.2)",
-                borderRadius: 12, color: "#fff", outline: "none", transition: "all 0.2s",
+                width: 52, height: 60, textAlign: "center",
+                fontSize: 24, fontWeight: 800,
+                background: digit ? "rgba(99,102,241,0.25)" : "rgba(255,255,255,0.07)",
+                border: digit ? "2px solid #6366f1" : "2px solid rgba(255,255,255,0.15)",
+                borderRadius: 12, color: "#fff", outline: "none",
+                transition: "all 0.2s",
               }} />
           ))}
         </div>
 
-        <button onClick={handleVerify} disabled={loading} style={styles.btn}>
-          {loading ? "Verifying..." : "Verify & Continue →"}
+        <button onClick={handleVerify} disabled={loading} style={{
+          width: "100%", padding: "14px",
+          background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+          color: "#fff", border: "none", borderRadius: 12,
+          fontSize: 15, fontWeight: 700, cursor: "pointer",
+          boxShadow: "0 4px 20px rgba(99,102,241,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+          marginBottom: 20,
+        }}>
+          {loading && <span style={{ width: 17, height: 17, border: "2px solid rgba(255,255,255,0.3)", borderTop: "2px solid #fff", borderRadius: "50%", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
+          {loading ? "Verifying..." : "Verify & Continue"}
         </button>
 
-        <div style={{ textAlign: "center", marginTop: 20, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>
           Didn't receive the code?{" "}
           {countdown > 0 ? (
-            <span style={{ color: "rgba(255,255,255,0.3)" }}>Resend in {countdown}s</span>
+            <span style={{ color: "rgba(255,255,255,0.25)" }}>Resend in {countdown}s</span>
           ) : (
             <button onClick={handleResend} disabled={resending}
               style={{ background: "none", border: "none", color: "#a78bfa", fontWeight: 700, cursor: "pointer", fontSize: 13 }}>
               {resending ? "Sending..." : "Resend Code"}
             </button>
           )}
-        </div>
+        </p>
 
-        <div style={{ textAlign: "center", marginTop: 14 }}>
-          <a href="/signup" style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, textDecoration: "none" }}>← Back to Sign Up</a>
+        <div style={{ marginTop: 16 }}>
+          <a href="/signup" style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, textDecoration: "none" }}>Back to Sign Up</a>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fadeSlideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes bounce { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
-        .otp-card { animation: fadeSlideUp 0.7s ease forwards; }
-        button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-      `}</style>
     </div>
   );
 }
-
-const styles = {
-  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" },
-  card: { position: "relative", zIndex: 2, background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 24, padding: "40px 36px", width: "100%", maxWidth: 420, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" },
-  title: { color: "#fff", fontSize: 24, fontWeight: 800, margin: "10px 0 6px" },
-  subtitle: { color: "rgba(255,255,255,0.5)", fontSize: 14, margin: 0 },
-  btn: { width: "100%", background: "linear-gradient(135deg, #6c63ff, #a855f7)", color: "#fff", border: "none", borderRadius: 12, padding: "14px", fontSize: 16, fontWeight: 700, cursor: "pointer", transition: "all 0.3s", boxShadow: "0 4px 15px rgba(108,99,255,0.4)" },
-};

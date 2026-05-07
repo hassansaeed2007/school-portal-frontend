@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import VideoBackground from "../components/VideoBackground";
 
 export default function Login() {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading]   = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -27,120 +29,112 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.page}>
-      {/* Floating animated shapes */}
-      <div style={{ ...styles.shape, width: 300, height: 300, top: "-80px", left: "-80px", animationDuration: "8s" }} />
-      <div style={{ ...styles.shape, width: 200, height: 200, bottom: "60px", right: "-60px", animationDuration: "6s" }} />
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", padding: "20px" }}>
+      <VideoBackground src="/vedio 1.mp4" opacity={0.6} />
 
-      {/* Card */}
-      <div style={styles.card} className="login-card">
-        {/* Logo / Header */}
-        <div style={styles.header}>
-          <h2 style={styles.title}>School Portal</h2>
-          <p style={styles.subtitle}>Sign in to your account</p>
+      <div className="glass fade-up" style={{
+        position: "relative", zIndex: 2,
+        width: "100%", maxWidth: 420,
+        padding: "44px 40px",
+        boxShadow: "0 32px 80px rgba(0,0,0,0.5)",
+      }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: 18,
+            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            margin: "0 auto 16px",
+            boxShadow: "0 8px 24px rgba(99,102,241,0.4)",
+            fontSize: 28, fontWeight: 800, color: "#fff"
+          }}>S</div>
+          <h1 style={{ color: "#fff", fontSize: 26, fontWeight: 800, letterSpacing: -0.5 }}>School Portal</h1>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginTop: 6 }}>Sign in to your account</p>
         </div>
 
-        <form onSubmit={handleLogin} style={styles.form}>
-          <div style={styles.inputGroup}>
-            <input style={styles.input} type="email" value={email}
-              onChange={(e) => setEmail(e.target.value)} required placeholder="Email Address" />
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Email */}
+          <div>
+            <label style={labelStyle}>Email Address</label>
+            <input
+              style={inputStyle}
+              type="email" value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required placeholder="you@school.edu"
+            />
           </div>
 
-          <div style={styles.inputGroup}>
-            <input style={styles.input} type="password" value={password}
-              onChange={(e) => setPassword(e.target.value)} required placeholder="Password" />
+          {/* Password */}
+          <div>
+            <label style={labelStyle}>Password</label>
+            <div style={{ position: "relative" }}>
+              <input
+                style={{ ...inputStyle, paddingRight: 48 }}
+                type={showPass ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required placeholder="Enter password"
+              />
+              <button type="button" onClick={() => setShowPass(!showPass)}
+                style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 13, padding: 0 }}>
+                {showPass ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
-          <button type="submit" disabled={loading} style={styles.btn}>
-            {loading ? <span style={styles.spinner} /> : null}
-            {loading ? "Signing in..." : "Login →"}
+          {/* Forgot password */}
+          <div style={{ textAlign: "right", marginTop: -8 }}>
+            <Link to="/forgot-password" style={{ color: "#a78bfa", fontSize: 13, textDecoration: "none" }}>
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Submit */}
+          <button type="submit" disabled={loading} style={btnStyle}>
+            {loading ? <span style={spinnerStyle} /> : null}
+            {loading ? "Signing in..." : "Login"}
           </button>
         </form>
 
-        <p style={styles.footer}>
+        <p style={{ textAlign: "center", color: "rgba(255,255,255,0.45)", fontSize: 13, marginTop: 24 }}>
           Don't have an account?{" "}
-          <Link to="/signup" style={styles.link}>Sign Up</Link>
+          <Link to="/signup" style={{ color: "#a78bfa", fontWeight: 700, textDecoration: "none" }}>Sign Up</Link>
         </p>
       </div>
 
       <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .login-card {
-          animation: fadeSlideUp 0.7s ease forwards;
-        }
-        input:focus {
-          outline: none;
-          border-color: #6c63ff !important;
-          box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
-        }
-        button:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(108,99,255,0.5) !important;
+        input::placeholder { color: rgba(255,255,255,0.3); }
+        input:focus { border-color: rgba(139,92,246,0.7) !important; box-shadow: 0 0 0 3px rgba(139,92,246,0.2); }
+        @media (max-width: 480px) {
+          .glass { padding: 32px 24px !important; }
         }
       `}</style>
     </div>
   );
 }
 
-const styles = {
-  page: {
-    minHeight: "100vh", display: "flex", alignItems: "center",
-    justifyContent: "center", position: "relative", overflow: "hidden",
-    background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
-  },
-  shape: {
-    position: "absolute", borderRadius: "50%",
-    background: "rgba(108,99,255,0.15)",
-    animation: "float 8s ease-in-out infinite",
-    zIndex: 1,
-  },
-  card: {
-    position: "relative", zIndex: 2,
-    background: "rgba(255,255,255,0.07)",
-    backdropFilter: "blur(20px)",
-    WebkitBackdropFilter: "blur(20px)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    borderRadius: 24, padding: "40px 36px",
-    width: "100%", maxWidth: 420,
-    boxShadow: "0 25px 50px rgba(0,0,0,0.5)",
-  },
-  header: { textAlign: "center", marginBottom: 32 },
-  title: { color: "#fff", fontSize: 26, fontWeight: 800, margin: "0 0 6px" },
-  subtitle: { color: "rgba(255,255,255,0.6)", fontSize: 14, margin: 0 },
-  form: { display: "flex", flexDirection: "column", gap: 16 },
-  inputGroup: {
-    display: "flex", alignItems: "center",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.15)",
-    borderRadius: 12, padding: "0 16px", transition: "all 0.3s",
-  },
-  input: {
-    flex: 1, background: "none", border: "none", color: "#fff",
-    fontSize: 14, padding: "14px 0", outline: "none",
-  },
-  btn: {
-    background: "linear-gradient(135deg, #6c63ff, #a855f7)",
-    color: "#fff", border: "none", borderRadius: 12,
-    padding: "14px", fontSize: 16, fontWeight: 700,
-    cursor: "pointer", transition: "all 0.3s",
-    boxShadow: "0 4px 15px rgba(108,99,255,0.4)",
-    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-  },
-  spinner: {
-    width: 18, height: 18, border: "2px solid rgba(255,255,255,0.3)",
-    borderTop: "2px solid #fff", borderRadius: "50%",
-    animation: "spin 0.8s linear infinite", display: "inline-block",
-  },
-  footer: { textAlign: "center", color: "rgba(255,255,255,0.5)", fontSize: 13, marginTop: 24 },
-  link: { color: "#a78bfa", fontWeight: 700, textDecoration: "none" },
+const labelStyle = { display: "block", color: "rgba(255,255,255,0.7)", fontSize: 13, fontWeight: 600, marginBottom: 7 };
+const inputStyle = {
+  width: "100%", padding: "13px 16px",
+  background: "rgba(255,255,255,0.08)",
+  border: "1px solid rgba(255,255,255,0.15)",
+  borderRadius: 12, color: "#fff", fontSize: 14,
+  boxSizing: "border-box", transition: "all 0.2s",
+};
+const btnStyle = {
+  width: "100%", padding: "14px",
+  background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+  color: "#fff", border: "none", borderRadius: 12,
+  fontSize: 15, fontWeight: 700, cursor: "pointer",
+  boxShadow: "0 4px 20px rgba(99,102,241,0.4)",
+  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+  marginTop: 4,
+};
+const spinnerStyle = {
+  width: 18, height: 18,
+  border: "2px solid rgba(255,255,255,0.3)",
+  borderTop: "2px solid #fff",
+  borderRadius: "50%",
+  animation: "spin 0.8s linear infinite",
+  display: "inline-block",
 };

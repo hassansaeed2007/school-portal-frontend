@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../../components/Navbar";
 import { TabBar } from "../../components/UI";
+import PageLayout from "../../components/PageLayout";
 import BrowseSubjects from "./BrowseSubjects";
 import MySubjects from "./MySubjects";
 import MyAttendance from "./MyAttendance";
@@ -20,18 +21,18 @@ export default function StudentDashboard() {
   const [active, setActive] = useState("Browse Subjects");
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f5f7fa" }}>
+    <PageLayout>
       <Navbar user={user} />
-      <div style={{ margin: "20px 28px 0" }}>
+      <div style={{ padding: "16px 24px 0" }}>
         <TabBar tabs={TABS} active={active} onChange={setActive} color="#7c2d12" />
       </div>
-      <div style={{ padding: "20px 28px" }} className="fade-in">
+      <div style={{ padding: "16px 24px 24px" }} className="fade-in">
         {active === "Browse Subjects" && <BrowseSubjects />}
         {active === "My Subjects"     && <MySubjects />}
         {active === "My Results"      && <MyResults />}
         {active === "My Attendance"   && <MyAttendance />}
         {active === "Profile"         && <StudentProfile />}
       </div>
-    </div>
+    </PageLayout>
   );
 }
