@@ -28,14 +28,6 @@ export default function Login() {
 
   return (
     <div style={styles.page}>
-      {/* Background Video */}
-      <video autoPlay muted loop playsInline style={styles.video}>
-        <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-      </video>
-
-      {/* Dark overlay */}
-      <div style={styles.overlay} />
-
       {/* Floating animated shapes */}
       <div style={{ ...styles.shape, width: 300, height: 300, top: "-80px", left: "-80px", animationDuration: "8s" }} />
       <div style={{ ...styles.shape, width: 200, height: 200, bottom: "60px", right: "-60px", animationDuration: "6s" }} />
@@ -104,16 +96,7 @@ const styles = {
   page: {
     minHeight: "100vh", display: "flex", alignItems: "center",
     justifyContent: "center", position: "relative", overflow: "hidden",
-    background: "#0a0a1a",
-  },
-  video: {
-    position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
-    objectFit: "cover", zIndex: 0,
-  },
-  overlay: {
-    position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
-    background: "linear-gradient(135deg, rgba(10,10,40,0.85) 0%, rgba(30,10,60,0.8) 100%)",
-    zIndex: 1,
+    background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)",
   },
   shape: {
     position: "absolute", borderRadius: "50%",

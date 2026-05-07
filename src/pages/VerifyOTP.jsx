@@ -83,10 +83,6 @@ export default function VerifyOTP() {
 
   return (
     <div style={styles.page}>
-      <video autoPlay muted loop playsInline style={styles.video}>
-        <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-      </video>
-      <div style={styles.overlay} />
 
       <div style={styles.card} className="otp-card">
         <div style={{ textAlign: "center", marginBottom: 28 }}>
@@ -143,9 +139,7 @@ export default function VerifyOTP() {
 }
 
 const styles = {
-  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "#0a0a1a" },
-  video: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 },
-  overlay: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", background: "linear-gradient(135deg, rgba(10,10,40,0.88), rgba(30,10,60,0.85))", zIndex: 1 },
+  page: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" },
   card: { position: "relative", zIndex: 2, background: "rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 24, padding: "40px 36px", width: "100%", maxWidth: 420, boxShadow: "0 25px 50px rgba(0,0,0,0.5)" },
   title: { color: "#fff", fontSize: 24, fontWeight: 800, margin: "10px 0 6px" },
   subtitle: { color: "rgba(255,255,255,0.5)", fontSize: 14, margin: 0 },
